@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Little Universe</title>
+<style>
+  :root { --ink:#f8f4ff; --violet:#a88bff; --pink:#ff9ed8; }
+  * { box-sizing:border-box; }
+  body { margin:0; color:var(--ink); font-family:system-ui, sans-serif; background:#090b25; }
+  .screen { min-height:100vh; display:grid; place-items:center; padding:20px; }
+  #welcome { text-align:center; background:radial-gradient(ellipse at 50% 35%,#352b72 0%,#15163e 42%,#080a20 100%); }
+  h1 { font-size:clamp(2.3rem,7vw,5rem); margin:.2em 0; letter-spacing:.03em; text-shadow:0 0 22px #b69aff; }
+  .subtitle { color:#ddd3ff; font-size:1.1rem; }
+  button { border:2px solid #e8dfff; border-radius:999px; padding:12px 23px; color:#fff; background:linear-gradient(135deg,#8c63e8,#d65db8); font-weight:700; font-size:1rem; cursor:pointer; box-shadow:0 0 18px #9c70e988; }
+  button:hover { transform:translateY(-2px); }
+  #game-wrap { display:none; padding:16px; max-width:1000px; margin:auto; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin:8px 0 14px; }
+  .topbar h2 { margin:0; }
+  #scene { position:relative; height:min(65vh,560px); min-height:390px; overflow:hidden; border:2px solid #7766bd; border-radius:18px; background:radial-gradient(circle at 78% 18%,#473b8c 0,#1c2058 32%,#0a1034 75%); box-shadow:0 0 30px #6652b555; }
+  .star { position:absolute; color:#fff8d6; animation:twinkle 2.5s infinite alternate; pointer-events:none; }
+  @keyframes twinkle { from{opacity:.35;transform:scale(.8)} to{opacity:1;transform:scale(1.15)} }
+  .planet { position:absolute; border:0; border-radius:50%; padding:0; display:grid; place-items:center; box-shadow:inset -12px -12px 18px #0005,0 0 24px #c5a5ff66; }
+  .planet span { position:absolute; top:105%; width:150px; color:white; font-size:.85rem; text-shadow:0 2px 4px #000; }
+  #memory-planet { width:105px;height:105px;left:68%;top:25%;background:radial-gradient(circle at 30% 25%,#ffdbff,#bd83ef 45%,#6c4eae); }
+  #heart-planet { width:80px;height:80px;left:18%;top:62%;background:radial-gradient(circle at 30% 25%,#ffd1ed,#ed6da9 50%,#9d3e8b); }
+  #character { position:absolute; left:9%; top:42%; font-size:48px; line-height:1; z-index:5; filter:drop-shadow(0 0 12px #ffe5ff); transition:left .08s linear,top .08s linear; user-select:none; }
+  .character-name { position:absolute; left:0; top:100%; width:100%; font-size:12px; text-align:center; }
+  .hint { color:#d8d0ff; font-size:.95rem; margin:12px 0; }
+  .controls { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .controls button { min-width:54px; border-radius:12px; padding:10px 16px; }
+  dialog { border:1px solid #b8a3ff; border-radius:18px; max-width:min(520px,90vw); color:#fff; background:#19183f; padding:25px; box-shadow:0 0 35px #0009; }
+  dialog::backdrop { background:#05051dcc; }
+  dialog h3 { margin-top:0; }
+  .photo-placeholder { display:grid; place-items:center; min-height:150px; border:2px dashed #9b8bd2; border-radius:12px; color:#ded5ff; margin:12px 0; background:#292653; text-align:center; padding:15px; }
+  .small { font-size:.85rem; color:#d5cefa; }
+  @media(max-width:560px) { #scene{min-height:420px} .planet span{font-size:.75rem} }
+</style>
+</head>
+<body>
+<section id="welcome" class="screen">
+  <div>
+    <div style="font-size:3rem">🌙 ✦ 🪐</div>
+    <h1>Our Little Universe</h1>
+    <p class="subtitle">A tiny adventure made just for you.</p>
+    <button id="start">Start Adventure ✨</button>
+    <p class="small">A little world full of memories, stars, and surprises.</p>
+  </div>
+</section>
+
+<main id="game-wrap">
+  <div class="topbar">
+    <h2>🌌 Our Little Universe</h2>
+    <button id="home">Back to title</button>
+  </div>
+  <p class="hint">Explore with the arrow keys or WASD. Walk up to a planet and press <b>Enter</b>, or tap a planet.</p>
+  <section id="scene" aria-label="Interactive fantasy space">
+    <div class="star" style="left:8%;top:12%">✦</div><div class="star" style="left:30%;top:23%">·</div>
+    <div class="star" style="left:53%;top:12%">✧</div><div class="star" style="left:88%;top:66%">✦</div>
+    <div class="star" style="left:45%;top:77%">·</div><div class="star" style="left:12%;top:84%">✧</div>
+    <button class="planet" id="memory-planet" aria-label="Open Memory Galaxy"><span>Memory Galaxy</span>📷</button>
+    <button class="planet" id="heart-planet" aria-label="Open Heart Planet"><span>Heart Planet</span>💖</button>
+    <div id="character" aria-label="Your character">🧑‍🚀<div class="character-name">You</div></div>
+  </section>
+  <div class="controls" aria-label="Touch movement controls">
+    <button data-move="up">▲</button>
+    <button data-move="left">◀</button>
+    <button data-move="down">▼</button>
+    <button data-move="right">▶</button>
+    <button id="interact">Interact ✨</button>
+  </div>
+  <p class="hint" id="status">Find a planet to discover a little surprise.</p>
+</main>
+
+<dialog id="memory-dialog">
+  <h3>📷 Memory Galaxy</h3>
+  <div class="photo-placeholder">Your photo goes here 💫<br><span class="small">Replace this with a favorite picture of you two.</span></div>
+  <p><b>A memory I treasure:</b></p>
+  <p contenteditable="true">Write a favorite memory of us here. Tap this text to personalize it.</p>
+  <button class="close">Back to exploring</button>
+</dialog>
+<dialog id="heart-dialog">
+  <h3>💖 Heart Planet</h3>
+  <p contenteditable="true">One thing I love about you is how you make ordinary moments feel special. Tap here to write your own message.</p>
+  <p class="small">You can edit this message directly in the page while previewing.</p>
+  <button class="close">Back to exploring</button>
+</dialog>
+<script>
+const welcome = document.querySelector('#welcome');
+const game = document.querySelector('#game-wrap');
+const scene = document.querySelector('#scene');
+const character = document.querySelector('#character');
+const statusLine = document.querySelector('#status');
+let x = 9, y = 42;
+const step = 3.5;
+function render(){ character.style.left=x+'%'; character.style.top=y+'%'; }
+function move(dir){
+  if(dir==='left') x=Math.max(1,x-step);
+  if(dir==='right') x=Math.min(90,x+step);
+  if(dir==='up') y=Math.max(2,y-step);
+  if(dir==='down') y=Math.min(83,y+step);
+  render();
+}
+function near(el){
+  const a=character.getBoundingClientRect(), b=el.getBoundingClientRect();
+  const ax=a.left+a.width/2, ay=a.top+a.height/2, bx=b.left+b.width/2, by=b.top+b.height/2;
+  return Math.hypot(ax-bx,ay-by)<115;
+}
+function interact(){
+  if(near(document.querySelector('#memory-planet'))) document.querySelector('#memory-dialog').showModal();
+  else if(near(document.querySelector('#heart-planet'))) document.querySelector('#heart-dialog').showModal();
+  else statusLine.textContent='Keep exploring—get closer to a planet to discover its surprise!';
+}
+document.querySelector('#start').onclick=()=>{welcome.style.display='none';game.style.display='block';};
+document.querySelector('#home').onclick=()=>{game.style.display='none';welcome.style.display='grid';};
+document.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('click',()=>move(b.dataset.move)));
+document.querySelector('#interact').onclick=interact;
+document.querySelector('#memory-planet').onclick=()=>document.querySelector('#memory-dialog').showModal();
+document.querySelector('#heart-planet').onclick=()=>document.querySelector('#heart-dialog').showModal();
+document.querySelectorAll('.close').forEach(b=>b.onclick=()=>b.closest('dialog').close());
+document.addEventListener('keydown',e=>{
+  if(document.querySelector('dialog[open]')) return;
+  const k=e.key.toLowerCase();
+  const dirs={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
+  if(dirs[k]){e.preventDefault();move(dirs[k]);}
+  if(k==='enter') interact();
+});
+</script>
+</body>
+</html>
